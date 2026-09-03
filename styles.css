@@ -349,6 +349,8 @@ h3 {
   background: var(--code);
   padding: 12px;
   color: white;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .solution-line {
