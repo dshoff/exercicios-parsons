@@ -52,6 +52,7 @@ let activeExerciseIndex = 0;
 let history = [];
 let activeCard = null;
 let activePointerId = null;
+let activeInputType = null;
 let traceIndex = 0;
 
 const nav = document.querySelector("#exercise-nav");
@@ -240,7 +241,8 @@ function createBlock(id, index) {
   item.dataset.id = id;
   item.tabIndex = -1;
   item.setAttribute("aria-label", "Bloco " + (index + 1) + ": " + block.code.trim() + (locked ? ". Posição correta." : ""));
-  item.addEventListener("pointerdown", startDrag);
+  item.addEventListener("pointerdown", startPointerDrag);
+  item.addEventListener("touchstart", startTouchDrag, { passive: false });
   const code = document.createElement("span");
   code.className = "code-text";
   code.textContent = block.code;
@@ -310,44 +312,79 @@ function moveBy(id, direction) {
   list.querySelector("[data-id=\"" + id + "\"]").focus({ preventScroll: true });
 }
 
-function startDrag(event) {
+function canStartDrag(event, card) {
   const state = currentState();
-  const card = event.currentTarget;
-  if (event.target.closest(".block-controls") || state.locked.includes(card.dataset.id) || state.complete) return;
+  return !event.target.closest(".block-controls")
+    && !state.locked.includes(card.dataset.id)
+    && !state.complete;
+}
+
+function beginDrag(event, card, inputType, pointerId) {
+  if (!canStartDrag(event, card)) return;
   if (activeCard) finishDrag();
   if (event.cancelable) event.preventDefault();
   activeCard = card;
-  activePointerId = event.pointerId;
+  activePointerId = pointerId;
+  activeInputType = inputType;
   registerMove();
   card.classList.add("dragging");
-  window.addEventListener("pointermove", dragMove, { passive: false });
-  window.addEventListener("pointerup", endDrag);
-  window.addEventListener("pointercancel", endDrag);
-  window.addEventListener("blur", finishDrag);
 }
 
-function dragMove(event) {
-  if (!activeCard || event.pointerId !== activePointerId) return;
-  event.preventDefault();
+function startPointerDrag(event) {
+  if (event.pointerType === "touch") return;
+  beginDrag(event, event.currentTarget, "pointer", event.pointerId);
+}
+
+function startTouchDrag(event) {
+  if (event.touches.length !== 1) return;
+  const touch = event.changedTouches[0];
+  beginDrag(event, event.currentTarget, "touch", touch.identifier);
+}
+
+function moveDrag(clientX, clientY) {
   const state = currentState();
-  const target = document.elementFromPoint(event.clientX, event.clientY);
+  const target = document.elementFromPoint(clientX, clientY);
   const targetCard = target && target.closest(".code-block");
   if (!targetCard || targetCard === activeCard || state.locked.includes(targetCard.dataset.id)) return;
   const rect = targetCard.getBoundingClientRect();
-  list.insertBefore(activeCard, event.clientY > rect.top + rect.height / 2 ? targetCard.nextSibling : targetCard);
+  list.insertBefore(activeCard, clientY > rect.top + rect.height / 2 ? targetCard.nextSibling : targetCard);
 }
 
-function endDrag(event) {
-  if (!activeCard || event.pointerId !== activePointerId) return;
+function dragPointer(event) {
+  if (!activeCard || activeInputType !== "pointer" || event.pointerId !== activePointerId) return;
+  event.preventDefault();
+  moveDrag(event.clientX, event.clientY);
+}
+
+function endPointerDrag(event) {
+  if (!activeCard || activeInputType !== "pointer" || event.pointerId !== activePointerId) return;
+  finishDrag();
+}
+
+function findTouch(touchList, identifier) {
+  for (let index = 0; index < touchList.length; index += 1) {
+    if (touchList[index].identifier === identifier) return touchList[index];
+  }
+  return null;
+}
+
+function dragTouch(event) {
+  if (!activeCard || activeInputType !== "touch") return;
+  const touch = findTouch(event.touches, activePointerId);
+  if (!touch) return;
+  if (event.cancelable) event.preventDefault();
+  moveDrag(touch.clientX, touch.clientY);
+}
+
+function endTouchDrag(event) {
+  if (!activeCard || activeInputType !== "touch") return;
+  if (!findTouch(event.changedTouches, activePointerId)) return;
+  if (event.cancelable) event.preventDefault();
   finishDrag();
 }
 
 function finishDrag() {
   if (!activeCard) return;
-  window.removeEventListener("pointermove", dragMove);
-  window.removeEventListener("pointerup", endDrag);
-  window.removeEventListener("pointercancel", endDrag);
-  window.removeEventListener("blur", finishDrag);
   activeCard.classList.remove("dragging");
   const state = currentState();
   const movableIds = Array.from(list.children)
@@ -356,6 +393,7 @@ function finishDrag() {
   state.order = rebuildWithLockedSlots(movableIds);
   activeCard = null;
   activePointerId = null;
+  activeInputType = null;
   renderPage();
 }
 
@@ -487,5 +525,13 @@ document.querySelector("#trace-restart").addEventListener("click", function () {
   traceIndex = 0;
   renderTrace();
 });
+
+window.addEventListener("pointermove", dragPointer, { passive: false });
+window.addEventListener("pointerup", endPointerDrag);
+window.addEventListener("pointercancel", endPointerDrag);
+document.addEventListener("touchmove", dragTouch, { passive: false });
+document.addEventListener("touchend", endTouchDrag, { passive: false });
+document.addEventListener("touchcancel", endTouchDrag, { passive: false });
+window.addEventListener("blur", finishDrag);
 
 renderPage();
