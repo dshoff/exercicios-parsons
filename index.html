@@ -3,72 +3,86 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="description" content="Exercício de Parsons em linguagem C sobre a sequência entrada, processamento e saída.">
-  <title>Exercício de Parsons — Soma de dois valores</title>
-  <link rel="stylesheet" href="styles.css">
+  <meta name="description" content="Exercícios de Parsons em linguagem C com código comentado e teste de mesa.">
+  <title>Exercícios de Parsons — Linguagem C</title>
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body>
   <main class="page-shell">
     <header class="activity-header">
       <p class="eyebrow">Algoritmos e Programação · Linguagem C</p>
       <h1>Ordene o programa</h1>
-      <p class="lead">Organize as instruções para que o programa leia dois valores, calcule a soma e apresente o resultado.</p>
+      <p class="lead">Reorganize as instruções até formar um programa correto.</p>
     </header>
-
+    <nav class="exercise-nav" aria-label="Escolha do exercício" id="exercise-nav"></nav>
     <section class="activity-card" aria-labelledby="exercise-title">
       <div class="activity-meta">
         <div>
-          <p class="step-label">Exercício 1</p>
-          <h2 id="exercise-title">Soma de dois valores</h2>
+          <p class="step-label" id="exercise-number"></p>
+          <h2 id="exercise-title"></h2>
         </div>
-        <p class="attempts" id="attempts" aria-live="polite">Tentativas: 0</p>
+        <p class="attempts" id="attempts" aria-live="polite"></p>
       </div>
-
+      <p class="exercise-prompt" id="exercise-prompt"></p>
       <div class="instructions" id="instructions">
         <span aria-hidden="true">↕</span>
-        <p>Arraste os blocos pela alça. Você também pode usar os botões de seta.</p>
+        <p>Arraste qualquer parte da instrução. Como alternativa, use os botões de seta.</p>
       </div>
-
       <div class="code-frame" aria-label="Programa em C">
-        <pre class="fixed-code"><code><span class="syntax-keyword">#include</span> &lt;stdio.h&gt;
-
-<span class="syntax-type">int</span> main(<span class="syntax-type">void</span>)
-{</code></pre>
-
+        <pre class="fixed-code"><code id="fixed-start"></code></pre>
         <ol class="sortable-list" id="code-list" aria-describedby="instructions"></ol>
-
-        <pre class="fixed-code"><code>}</code></pre>
+        <pre class="fixed-code closing"><code>}</code></pre>
       </div>
-
-      <div class="feedback neutral" id="feedback" role="status" aria-live="polite">
-        Organize os seis blocos e clique em <strong>Verificar</strong>.
-      </div>
-
+      <div class="feedback neutral" id="feedback" role="status" aria-live="polite"></div>
       <div class="actions">
         <button class="button primary" id="check-button" type="button">Verificar</button>
         <button class="button secondary" id="undo-button" type="button" disabled>Desfazer</button>
         <button class="button ghost" id="restart-button" type="button">Recomeçar</button>
       </div>
     </section>
-
     <section class="result-card" id="result" aria-labelledby="result-title" hidden>
       <p class="success-kicker">Sequência correta</p>
-      <h2 id="result-title">Fluxo completo do programa</h2>
-      <div class="solution-code" id="solution-code"></div>
-      <div class="legend" aria-label="Legenda das etapas">
-        <span><i class="dot declaration"></i> Declaração</span>
-        <span><i class="dot input"></i> Entrada</span>
-        <span><i class="dot processing"></i> Processamento</span>
-        <span><i class="dot output"></i> Saída</span>
-        <span><i class="dot termination"></i> Término</span>
+      <h2 id="result-title">Explore o programa</h2>
+      <div class="view-tabs" role="tablist" aria-label="Visualização do programa">
+        <button class="view-tab active" id="plain-tab" role="tab" aria-selected="true" type="button">Código</button>
+        <button class="view-tab" id="commented-tab" role="tab" aria-selected="false" type="button">Código comentado</button>
+        <button class="view-tab" id="trace-tab" role="tab" aria-selected="false" type="button">Teste de mesa</button>
+      </div>
+      <div id="code-view" class="result-view">
+        <div class="solution-code" id="solution-code"></div>
+        <div class="legend" aria-label="Legenda das etapas">
+          <span><i class="dot declaration"></i> Declaração</span>
+          <span><i class="dot input"></i> Entrada</span>
+          <span><i class="dot processing"></i> Processamento</span>
+          <span><i class="dot output"></i> Saída</span>
+          <span><i class="dot control"></i> Controle</span>
+          <span><i class="dot termination"></i> Término</span>
+        </div>
+      </div>
+      <div id="trace-view" class="result-view" hidden>
+        <p class="trace-input" id="trace-input"></p>
+        <div class="trace-layout">
+          <div class="trace-code" id="trace-code" aria-label="Código em execução"></div>
+          <aside class="trace-state">
+            <p class="trace-progress" id="trace-progress"></p>
+            <h3 id="trace-heading"></h3>
+            <p id="trace-description"></p>
+            <dl id="trace-variables"></dl>
+            <div class="trace-output" id="trace-output"></div>
+          </aside>
+        </div>
+        <div class="trace-actions">
+          <button class="button secondary" id="trace-previous" type="button">← Anterior</button>
+          <button class="button primary" id="trace-next" type="button">Próximo →</button>
+          <button class="button ghost" id="trace-restart" type="button">Reiniciar execução</button>
+        </div>
       </div>
     </section>
-
     <footer>
-      Exercício adaptado de <cite>Algoritmos e programação com exemplos em Pascal e C</cite>, de Nina Edelweiss e Renata Livi.
+      <p>Exercícios adaptados de <cite>Algoritmos e programação com exemplos em Pascal e C</cite>, de Nina Edelweiss e Renata Livi.</p>
+      <p class="ai-note">Material didático produzido com a assistência de IA</p>
     </footer>
   </main>
-
-  <script src="script.js?v=2"></script>
+  <script src="script.js?v=3"></script>
 </body>
 </html>
