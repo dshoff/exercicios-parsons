@@ -120,31 +120,14 @@ function moveButton(symbol, label, direction, id) {
   return button;
 }
 
-function movableRange(index) {
-  let start = 0;
-  let end = state.order.length - 1;
-  for (let cursor = index - 1; cursor >= 0; cursor -= 1) {
-    if (state.locked.includes(state.order[cursor])) {
-      start = cursor + 1;
-      break;
-    }
-  }
-  for (let cursor = index + 1; cursor < state.order.length; cursor += 1) {
-    if (state.locked.includes(state.order[cursor])) {
-      end = cursor - 1;
-      break;
-    }
-  }
-  return { start, end };
-}
-
 function updateMoveButtons() {
-  [...list.children].forEach((item, index) => {
+  const movableIds = state.order.filter((id) => !state.locked.includes(id));
+  [...list.children].forEach((item) => {
     const locked = state.locked.includes(item.dataset.id) || state.complete;
-    const { start, end } = movableRange(index);
+    const movableIndex = movableIds.indexOf(item.dataset.id);
     const [up, down] = item.querySelectorAll(".move-button");
-    up.disabled = locked || index <= start;
-    down.disabled = locked || index >= end;
+    up.disabled = locked || movableIndex <= 0;
+    down.disabled = locked || movableIndex === -1 || movableIndex >= movableIds.length - 1;
   });
 }
 
@@ -154,15 +137,24 @@ function registerMove() {
 }
 
 function moveBy(id, direction) {
-  const from = state.order.indexOf(id);
+  if (state.locked.includes(id)) return;
+  const movableIds = state.order.filter((itemId) => !state.locked.includes(itemId));
+  const from = movableIds.indexOf(id);
   const to = from + direction;
-  const { start, end } = movableRange(from);
-  if (state.locked.includes(id) || to < start || to > end) return;
+  if (to < 0 || to >= movableIds.length) return;
   registerMove();
-  [state.order[from], state.order[to]] = [state.order[to], state.order[from]];
+  [movableIds[from], movableIds[to]] = [movableIds[to], movableIds[from]];
+  state.order = rebuildWithLockedSlots(movableIds);
   clearPartialFeedback();
   render();
-  list.children[to].querySelector(".drag-handle").focus();
+  list.querySelector(`[data-id="${id}"] .drag-handle`).focus();
+}
+
+function rebuildWithLockedSlots(movableIds) {
+  const remaining = [...movableIds];
+  return solution.map((solutionId) => (
+    state.locked.includes(solutionId) ? solutionId : remaining.shift()
+  ));
 }
 
 function startDrag(event) {
@@ -185,11 +177,6 @@ function dragMove(event) {
   const target = document.elementFromPoint(event.clientX, event.clientY)?.closest(".code-block");
   if (!target || target === activeCard || state.locked.includes(target.dataset.id)) return;
 
-  const currentIndex = [...list.children].indexOf(activeCard);
-  const targetIndex = [...list.children].indexOf(target);
-  const { start, end } = movableRange(currentIndex);
-  if (targetIndex < start || targetIndex > end) return;
-
   const targetRect = target.getBoundingClientRect();
   const placeAfter = event.clientY > targetRect.top + targetRect.height / 2;
   list.insertBefore(activeCard, placeAfter ? target.nextSibling : target);
@@ -199,7 +186,10 @@ function endDrag(event) {
   if (!activeCard || event.pointerId !== activePointerId) return;
   event.currentTarget.removeEventListener("pointermove", dragMove);
   activeCard.classList.remove("dragging");
-  state.order = [...list.children].map((item) => item.dataset.id);
+  const movableIds = [...list.children]
+    .map((item) => item.dataset.id)
+    .filter((id) => !state.locked.includes(id));
+  state.order = rebuildWithLockedSlots(movableIds);
   activeCard = null;
   activePointerId = null;
   document.body.style.userSelect = "";
