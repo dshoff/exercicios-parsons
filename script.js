@@ -14,15 +14,15 @@ const exercises = [
       { id: "return", code: "    return 0;", category: "termination", comment: "encerra o programa indicando execução bem-sucedida" }
     ],
     closingComment: "encerra a função main",
-    traceInput: "Entrada simulada: parcelaA = 4,5 e parcelaB = 2,0",
+    traceInput: "Entrada simulada: parcelaA = 4.5 e parcelaB = 2.0",
     trace: [
       { line: 1, heading: "Início da função", description: "A execução entra na função principal.", vars: {}, output: "" },
       { line: 2, heading: "Declaração", description: "As três variáveis reais são criadas, ainda sem valores definidos.", vars: { parcelaA: "—", parcelaB: "—", total: "—" }, output: "" },
       { line: 3, heading: "Solicitação", description: "O programa pede dois valores.", vars: { parcelaA: "—", parcelaB: "—", total: "—" }, output: "Digite dois valores:" },
-      { line: 4, heading: "Entrada", description: "Os valores simulados são armazenados nas variáveis.", vars: { parcelaA: "4,5", parcelaB: "2,0", total: "—" }, output: "Digite dois valores:" },
-      { line: 5, heading: "Processamento", description: "A expressão 4,5 + 2,0 é calculada.", vars: { parcelaA: "4,5", parcelaB: "2,0", total: "6,5" }, output: "Digite dois valores:" },
-      { line: 6, heading: "Saída", description: "O valor de total é apresentado.", vars: { parcelaA: "4,5", parcelaB: "2,0", total: "6,5" }, output: "Digite dois valores: Soma: 6.50" },
-      { line: 7, heading: "Término", description: "A função devolve zero e o programa termina.", vars: { parcelaA: "4,5", parcelaB: "2,0", total: "6,5" }, output: "Digite dois valores: Soma: 6.50" }
+      { line: 4, heading: "Entrada", description: "Os valores simulados são armazenados nas variáveis.", vars: { parcelaA: "4.5", parcelaB: "2.0", total: "—" }, output: "Digite dois valores:" },
+      { line: 5, heading: "Processamento", description: "A expressão 4.5 + 2.0 é calculada.", vars: { parcelaA: "4.5", parcelaB: "2.0", total: "6.5" }, output: "Digite dois valores:" },
+      { line: 6, heading: "Saída", description: "O valor de total é apresentado.", vars: { parcelaA: "4.5", parcelaB: "2.0", total: "6.5" }, output: "Digite dois valores: Soma: 6.50" },
+      { line: 7, heading: "Término", description: "A função devolve zero e o programa termina.", vars: { parcelaA: "4.5", parcelaB: "2.0", total: "6.5" }, output: "Digite dois valores: Soma: 6.50" }
     ]
   },
   {
@@ -314,14 +314,16 @@ function startDrag(event) {
   const state = currentState();
   const card = event.currentTarget;
   if (event.target.closest(".block-controls") || state.locked.includes(card.dataset.id) || state.complete) return;
+  if (activeCard) finishDrag();
+  if (event.cancelable) event.preventDefault();
   activeCard = card;
   activePointerId = event.pointerId;
   registerMove();
-  card.setPointerCapture(event.pointerId);
   card.classList.add("dragging");
-  card.addEventListener("pointermove", dragMove);
-  card.addEventListener("pointerup", endDrag, { once: true });
-  card.addEventListener("pointercancel", endDrag, { once: true });
+  window.addEventListener("pointermove", dragMove, { passive: false });
+  window.addEventListener("pointerup", endDrag);
+  window.addEventListener("pointercancel", endDrag);
+  window.addEventListener("blur", finishDrag);
 }
 
 function dragMove(event) {
@@ -337,7 +339,15 @@ function dragMove(event) {
 
 function endDrag(event) {
   if (!activeCard || event.pointerId !== activePointerId) return;
-  activeCard.removeEventListener("pointermove", dragMove);
+  finishDrag();
+}
+
+function finishDrag() {
+  if (!activeCard) return;
+  window.removeEventListener("pointermove", dragMove);
+  window.removeEventListener("pointerup", endDrag);
+  window.removeEventListener("pointercancel", endDrag);
+  window.removeEventListener("blur", finishDrag);
   activeCard.classList.remove("dragging");
   const state = currentState();
   const movableIds = Array.from(list.children)
