@@ -13,11 +13,17 @@
   --amber-soft: #fff7df;
   --code: #17212b;
   --code-card: #222e3a;
+  --code-font-size: .76rem;
   --shadow: 0 18px 50px rgba(26, 45, 64, .12);
   font-family: Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 * { box-sizing: border-box; }
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
 
 body {
   margin: 0;
@@ -181,7 +187,7 @@ h3 {
 .fixed-code {
   margin: 0;
   padding: 14px 16px 4px;
-  font: 500 .9rem/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 500 var(--code-font-size)/1.45 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre;
 }
 
@@ -240,14 +246,15 @@ h3 {
 }
 
 .code-text {
-  display: flex;
-  align-items: center;
+  display: block;
+  min-width: 0;
+  align-self: center;
   overflow-x: auto;
   touch-action: none;
   overscroll-behavior: none;
   -webkit-touch-callout: none;
   padding: 9px 11px;
-  font: 500 .86rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 500 var(--code-font-size)/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre;
   scrollbar-width: thin;
 }
@@ -360,7 +367,7 @@ h3 {
 .solution-line {
   border-left: 4px solid transparent;
   padding: 4px 9px;
-  font: 500 .82rem/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 500 var(--code-font-size)/1.4 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre;
 }
 
@@ -426,7 +433,7 @@ h3 {
 
 .trace-line code {
   padding: 4px;
-  font: 500 .76rem/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font: 500 var(--code-font-size)/1.35 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
   white-space: pre;
 }
 
@@ -463,7 +470,7 @@ h3 {
   background: var(--code);
   padding: 9px;
   color: white;
-  font: 500 .74rem/1.4 ui-monospace, monospace;
+  font: 500 var(--code-font-size)/1.4 ui-monospace, monospace;
   white-space: pre-wrap;
 }
 
@@ -478,17 +485,30 @@ footer p { margin-bottom: 4px; }
 .ai-note { text-align: right; font-size: .7rem; }
 
 @media (max-width: 700px) {
+  :root { --code-font-size: .68rem; }
   .page-shell { width: min(100% - 18px, 940px); padding-top: 22px; }
   .activity-meta { display: block; }
   .attempts { display: inline-block; margin-top: 10px; }
   .activity-card, .result-card { border-radius: 14px; }
-  .fixed-code { padding-left: 11px; padding-right: 11px; font-size: .79rem; }
+  .fixed-code { padding-left: 11px; padding-right: 11px; }
   .sortable-list { padding-left: 24px; padding-right: 7px; }
   .code-block { grid-template-columns: minmax(0, 1fr) 64px; }
-  .code-text { font-size: .73rem; padding-inline: 8px; }
+  .code-text {
+    overflow-x: hidden;
+    padding-inline: 8px;
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
+  .solution-code, .trace-code { overflow-x: hidden; }
+  .solution-line, .trace-line code {
+    white-space: pre-wrap;
+    overflow-wrap: anywhere;
+    word-break: break-word;
+  }
   .trace-layout { grid-template-columns: 1fr; }
   .trace-code { max-width: 100%; }
-  .trace-line code { font-size: .7rem; }
+  .trace-line { grid-template-columns: 25px minmax(0, 1fr); }
   .actions { display: grid; grid-template-columns: 1fr 1fr; }
   .actions .primary { grid-column: 1 / -1; }
   .trace-actions { display: grid; grid-template-columns: 1fr 1fr; }
